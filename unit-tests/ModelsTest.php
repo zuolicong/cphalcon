@@ -177,11 +177,22 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($people->nombres, $persona->nombres);
 		$this->assertEquals($people->estado, $persona->estado);
 
+		//Single bind test
 		$params = array("estado=:estado:", "bind" => array("estado" => 'A'), "order" => "nombres DESC", "limit" => 30);
 		$people = People::findFirst($params);
 		$persona = Personas::findFirst($params);
 		$this->assertEquals($people->nombres, $persona->nombres);
 		$this->assertEquals($people->estado, $persona->estado);
+
+		//Multiple binding
+		$params = array(
+			"conditions" => "created_at > :d1: AND created_at < :d2:",
+			"bind" => array("d1" => '2000-01-01', "d2" => "2012-11-01"),
+			"order" => "email DESC",
+			"limit" => 30
+		);
+		$subscriptores = Subscriptores::find($params);
+		$this->assertTrue(is_object($subscriptores));
 
 		$robot = Robots::findFirst(1);
 		$this->assertEquals(get_class($robot), 'Robots');
@@ -292,6 +303,5 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($before-1, People::count());
 
 	}
-
 
 }
