@@ -3,7 +3,7 @@
 $configMysql = array(
 	'host' => 'localhost',
 	'username' => 'root',
-	'password' => 'hea101',
+	'password' => '',
 	'dbname' => 'phalcon_test'
 );
 
