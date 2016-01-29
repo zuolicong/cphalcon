@@ -72676,6 +72676,7 @@ static PHP_METHOD(Phalcon_Mvc_Model_Criteria, getModelName);
 static PHP_METHOD(Phalcon_Mvc_Model_Criteria, bind);
 static PHP_METHOD(Phalcon_Mvc_Model_Criteria, bindTypes);
 static PHP_METHOD(Phalcon_Mvc_Model_Criteria, columns);
+static PHP_METHOD(Phalcon_Mvc_Model_Criteria, distinct);
 static PHP_METHOD(Phalcon_Mvc_Model_Criteria, join);
 static PHP_METHOD(Phalcon_Mvc_Model_Criteria, innerJoin);
 static PHP_METHOD(Phalcon_Mvc_Model_Criteria, leftJoin);
@@ -72732,6 +72733,7 @@ static const zend_function_entry phalcon_mvc_model_criteria_method_entry[] = {
 	PHP_ME(Phalcon_Mvc_Model_Criteria, bind, arginfo_phalcon_mvc_model_criteriainterface_bind, ZEND_ACC_PUBLIC)
 	PHP_ME(Phalcon_Mvc_Model_Criteria, bindTypes, arginfo_phalcon_mvc_model_criteriainterface_bindtypes, ZEND_ACC_PUBLIC)
 	PHP_ME(Phalcon_Mvc_Model_Criteria, columns, arginfo_phalcon_mvc_model_criteriainterface_columns, ZEND_ACC_PUBLIC)
+	PHP_ME(Phalcon_Mvc_Model_Criteria, distinct, arginfo_phalcon_mvc_model_criteriainterface_distinct, ZEND_ACC_PUBLIC)
 	PHP_ME(Phalcon_Mvc_Model_Criteria, join, arginfo_phalcon_mvc_model_criteriainterface_join, ZEND_ACC_PUBLIC)
 	PHP_ME(Phalcon_Mvc_Model_Criteria, innerJoin, arginfo_phalcon_mvc_model_criteria_innerjoin, ZEND_ACC_PUBLIC)
 	PHP_ME(Phalcon_Mvc_Model_Criteria, leftJoin, arginfo_phalcon_mvc_model_criteria_leftjoin, ZEND_ACC_PUBLIC)
@@ -72821,17 +72823,42 @@ static PHP_METHOD(Phalcon_Mvc_Model_Criteria, getModelName){
 
 static PHP_METHOD(Phalcon_Mvc_Model_Criteria, bind){
 
-	zval *bind_params, *merge = NULL;
+	zval *bind_params, *merge = NULL, *bind = NULL, *t0 = NULL, *t1 = NULL, *t2 = NULL;
 
-	phalcon_fetch_params(0, 1, 1, &bind_params, &merge);
+	PHALCON_MM_GROW();
+
+	phalcon_fetch_params(1, 1, 1, &bind_params, &merge);
 
 	if (Z_TYPE_P(bind_params) != IS_ARRAY) {
 		PHALCON_THROW_EXCEPTION_STRW(phalcon_mvc_model_exception_ce, "Bound parameters must be an Array");
 		return;
 	}
-	phalcon_update_property_array_string(this_ptr, SL("_params"), SS("bind"), bind_params TSRMLS_CC);
 
-	RETURN_THISW();
+	if (zend_is_true(merge)) {
+
+		t0 = phalcon_fetch_nproperty_this(this_ptr, SL("_params"), PH_NOISY TSRMLS_CC);
+		if (phalcon_array_isset_string(t0, SS("bind"))) {
+			t1 = phalcon_fetch_nproperty_this(this_ptr, SL("_params"), PH_NOISY TSRMLS_CC);
+			PHALCON_OBS_VAR(bind);
+			phalcon_array_fetch_string(&bind, t1, SL("bind"), PH_NOISY);
+		} else {
+			PHALCON_INIT_NVAR(bind);
+			ZVAL_NULL(bind);
+		}
+
+		if (Z_TYPE_P(bind) == IS_ARRAY) {
+			PHALCON_INIT_VAR(t2);
+			phalcon_add_function(t2, bind, bind_params);
+			phalcon_update_property_array_string(this_ptr, SL("_params"), SS("bind"), t2 TSRMLS_CC);
+		} else {
+			phalcon_update_property_array_string(this_ptr, SL("_params"), SS("bind"), bind_params TSRMLS_CC);
+		}
+
+	} else {
+		phalcon_update_property_array_string(this_ptr, SL("_params"), SS("bind"), bind_params TSRMLS_CC);
+	}
+
+	RETURN_THIS();
 }
 
 static PHP_METHOD(Phalcon_Mvc_Model_Criteria, bindTypes){
@@ -72845,12 +72872,12 @@ static PHP_METHOD(Phalcon_Mvc_Model_Criteria, bindTypes){
 		return;
 	}
 
-	if (Z_TYPE_P(current_joins) == IS_ARRAY) {
+	/*if (Z_TYPE_P(current_joins) == IS_ARRAY) {
 		PHALCON_INIT_VAR(merged_joins);
 		phalcon_fast_array_merge(merged_joins, &current_joins, &new_join_array TSRMLS_CC);
 	} else {
 		PHALCON_CPY_WRT(merged_joins, new_join_array);
-	}
+	}*/
 
 	phalcon_update_property_array_string(this_ptr, SL("_params"), SS("bindTypes"), bind_types TSRMLS_CC);
 
@@ -72864,6 +72891,16 @@ static PHP_METHOD(Phalcon_Mvc_Model_Criteria, columns){
 	phalcon_fetch_params(0, 1, 0, &columns);
 
 	phalcon_update_property_array_string(this_ptr, SL("_params"), SS("columns"), columns TSRMLS_CC);
+	RETURN_THISW();
+}
+
+static PHP_METHOD(Phalcon_Mvc_Model_Criteria, distinct){
+
+	zval *distinct;
+
+	phalcon_fetch_params(0, 1, 0, &distinct);
+
+	phalcon_update_property_array_string(this_ptr, SL("_params"), SS("distinct"), distinct TSRMLS_CC);
 	RETURN_THISW();
 }
 

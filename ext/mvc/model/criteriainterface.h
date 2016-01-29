@@ -109,6 +109,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_phalcon_mvc_model_criteriainterface_columns, 0, 0
 	ZEND_ARG_INFO(0, columns)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_phalcon_mvc_model_criteriainterface_distinct, 0, 0, 1)
+	ZEND_ARG_INFO(0, distinct)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_phalcon_mvc_model_criteriainterface_join, 0, 0, 1)
 	ZEND_ARG_INFO(0, model)
 	ZEND_ARG_INFO(0, conditions)

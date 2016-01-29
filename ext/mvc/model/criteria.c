@@ -63,6 +63,7 @@ PHP_METHOD(Phalcon_Mvc_Model_Criteria, getModelName);
 PHP_METHOD(Phalcon_Mvc_Model_Criteria, bind);
 PHP_METHOD(Phalcon_Mvc_Model_Criteria, bindTypes);
 PHP_METHOD(Phalcon_Mvc_Model_Criteria, columns);
+PHP_METHOD(Phalcon_Mvc_Model_Criteria, distinct);
 PHP_METHOD(Phalcon_Mvc_Model_Criteria, join);
 PHP_METHOD(Phalcon_Mvc_Model_Criteria, innerJoin);
 PHP_METHOD(Phalcon_Mvc_Model_Criteria, leftJoin);
@@ -119,6 +120,7 @@ static const zend_function_entry phalcon_mvc_model_criteria_method_entry[] = {
 	PHP_ME(Phalcon_Mvc_Model_Criteria, bind, arginfo_phalcon_mvc_model_criteriainterface_bind, ZEND_ACC_PUBLIC)
 	PHP_ME(Phalcon_Mvc_Model_Criteria, bindTypes, arginfo_phalcon_mvc_model_criteriainterface_bindtypes, ZEND_ACC_PUBLIC)
 	PHP_ME(Phalcon_Mvc_Model_Criteria, columns, arginfo_phalcon_mvc_model_criteriainterface_columns, ZEND_ACC_PUBLIC)
+	PHP_ME(Phalcon_Mvc_Model_Criteria, distinct, arginfo_phalcon_mvc_model_criteriainterface_distinct, ZEND_ACC_PUBLIC)
 	PHP_ME(Phalcon_Mvc_Model_Criteria, join, arginfo_phalcon_mvc_model_criteriainterface_join, ZEND_ACC_PUBLIC)
 	PHP_ME(Phalcon_Mvc_Model_Criteria, innerJoin, arginfo_phalcon_mvc_model_criteria_innerjoin, ZEND_ACC_PUBLIC)
 	PHP_ME(Phalcon_Mvc_Model_Criteria, leftJoin, arginfo_phalcon_mvc_model_criteria_leftjoin, ZEND_ACC_PUBLIC)
@@ -251,7 +253,7 @@ PHP_METHOD(Phalcon_Mvc_Model_Criteria, bind){
 		return;
 	}
 
-	if (phalcon_is_true(merge)) {
+	if (zend_is_true(merge)) {
 
 		t0 = phalcon_fetch_nproperty_this(this_ptr, SL("_params"), PH_NOISY TSRMLS_CC);
 		if (phalcon_array_isset_string(t0, SS("bind"))) {
@@ -326,6 +328,26 @@ PHP_METHOD(Phalcon_Mvc_Model_Criteria, columns){
 	phalcon_fetch_params(0, 1, 0, &columns);
 
 	phalcon_update_property_array_string(this_ptr, SL("_params"), SS("columns"), columns TSRMLS_CC);
+	RETURN_THISW();
+}
+
+/**
+ * Sets the columns to be queried
+ *
+ *<code>
+ *	$criteria->distinct(true);
+ *</code>
+ *
+ * @param boolean $distinct
+ * @return Phalcon\Mvc\Model\CriteriaInterface
+ */
+PHP_METHOD(Phalcon_Mvc_Model_Criteria, distinct){
+
+	zval *distinct;
+
+	phalcon_fetch_params(0, 1, 0, &distinct);
+
+	phalcon_update_property_array_string(this_ptr, SL("_params"), SS("distinct"), distinct TSRMLS_CC);
 	RETURN_THISW();
 }
 
