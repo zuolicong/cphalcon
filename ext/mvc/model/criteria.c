@@ -267,7 +267,7 @@ PHP_METHOD(Phalcon_Mvc_Model_Criteria, bind){
 
 		if (Z_TYPE_P(bind) == IS_ARRAY) {
 			PHALCON_INIT_VAR(t2);
-			phalcon_add_function(t2, bind, bind_params);
+			phalcon_add_function(t2, bind, bind_params TSRMLS_CC);
 			phalcon_update_property_array_string(this_ptr, SL("_params"), SS("bind"), t2 TSRMLS_CC);
 		} else {
 			phalcon_update_property_array_string(this_ptr, SL("_params"), SS("bind"), bind_params TSRMLS_CC);
