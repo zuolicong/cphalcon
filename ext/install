@@ -17,8 +17,8 @@
 if [ -f Makefile ]; then
 	make distclean
 	make clean
-	phpize --clean
+	phpize56 --clean
 fi
 
-phpize 
-CC="gcc" CFLAGS="-g3 -O0 -Wall" ./configure --enable-phalcon && make -j2 && make install && echo "Notice: Phalcon was compiled in debug mode.\nThanks for compiling Phalcon!\nBuild succeed: Please restart your web server to complete the installation"
+phpize56 
+CC="gcc" CFLAGS="-g3 -O0 -Wall" ./configure --with-php-config=/opt/local/bin/php-config56 --enable-phalcon && make -j2 && make install && echo "Notice: Phalcon was compiled in debug mode.\nThanks for compiling Phalcon!\nBuild succeed: Please restart your web server to complete the installation"

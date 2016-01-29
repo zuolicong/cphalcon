@@ -253,7 +253,7 @@ PHP_METHOD(Phalcon_Mvc_Model_Criteria, bind){
 		return;
 	}
 
-	if (zend_is_true(merge)) {
+	if (merge && zend_is_true(merge)) {
 
 		t0 = phalcon_fetch_nproperty_this(this_ptr, SL("_params"), PH_NOISY TSRMLS_CC);
 		if (phalcon_array_isset_string(t0, SS("bind"))) {
