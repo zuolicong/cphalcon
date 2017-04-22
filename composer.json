@@ -20,7 +20,7 @@
         "codeception/verify": "^0.3",
         "codeception/specify": "^0.4",
         "squizlabs/php_codesniffer": "^2.8",
-        "phalcon/zephir": "dev-master#dbc0b339b444045be3b37217f728d38047cd8fe7"
+        "phalcon/zephir": "dev-master#87bdccb03699bb61885aa0d619133ce36707cda6"
     },
     "license": "BSD-3-Clause",
     "authors": [
