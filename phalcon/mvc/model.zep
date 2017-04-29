@@ -413,6 +413,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	}
 
 	/**
+	 * 通过数组给模型赋值
 	 * Assigns values to a model from an array
 	 *
 	 * <code>
@@ -447,7 +448,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	 *
 	 * @param array data
 	 * @param array dataColumnMap array to transform keys of data to another
-	 * @param array whiteList
+	 * @param array whiteList 对于该数组中的属性忽略,不进行赋值操作
 	 * @return \Phalcon\Mvc\Model
 	 */
 	public function assign(array! data, var dataColumnMap = null, var whiteList = null) -> <Model>
@@ -478,6 +479,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 			let columnMap = null;
 		}
 
+        // 获取model的所有属性，对属性依次进行赋值
 		for attribute in metaData->getAttributes(this) {
 
 			// Check if we need to rename the field
@@ -497,6 +499,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 			// Check if we there is data for the field
 			if fetch value, dataMapped[attributeField] {
 
+                // 如果whiteList参数存在，则不对该白名单列表里的属性进行赋值
 				// If white-list exists check if the attribute is on that list
 				if typeof whiteList == "array" {
 					if !in_array(attributeField, whiteList) {
@@ -2226,6 +2229,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	}
 
 	/**
+	 * 进行实际的插入操作
 	 * Sends a pre-build INSERT SQL statement to the relational database system
 	 *
 	 * @param \Phalcon\Mvc\Model\MetaDataInterface metaData
@@ -2252,7 +2256,9 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 
 		let attributes = metaData->getAttributes(this),
 			bindDataTypes = metaData->getBindTypes(this),
+			// 获取所有在进行insert操作时必须忽略的属性，即通过this->skipAttributesOnCreate(array! attributes)函数设置的属性
 			automaticAttributes = metaData->getAutomaticCreateAttributes(this),
+			// 获取数据库所有非主键字段的默认值
 			defaultValues = metaData->getDefaultValues(this);
 
 		if globals_get("orm.column_renaming") {
@@ -2266,6 +2272,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 		 */
 		for field in attributes {
 
+            // 对于insert操作需要忽略的属性，不处理
 			if !isset automaticAttributes[field] {
 
 				/**
@@ -2280,6 +2287,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 				}
 
 				/**
+				 * 对于主键字段，这里不处理,后面单独处理
 				 * Check every attribute in the model except identity field
 				 */
 				if field != identityField {
@@ -2289,10 +2297,13 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 					 */
 					if fetch value, this->{attributeField} {
 
+                        // 对于model里定义了的字段，但是值为null，并且数据库为该字段指定了默认值，则将该默认值赋给该字段
 						if value === null && isset defaultValues[field] {
+						    // 新增快照数组,之前的版本没有
 							let snapshot[attributeField] = null;
 							let value = connection->getDefaultValue();
 						} else {
+						    // 新增快照数组,之前的版本没有
 							let snapshot[attributeField] = value;
 						}
 
@@ -2306,6 +2317,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 						let fields[] = field, values[] = value, bindTypes[] = bindType;
 					} else {
 
+                        // 对于model里没有定义的字段，且数据库为该字段指定了默认值，将该默认值赋给该字段,快照里该字段的值为null!
 						if isset defaultValues[field] {
 							let values[] = connection->getDefaultValue();
 							/**
@@ -2313,6 +2325,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 							 */
 							let snapshot[attributeField] = null;
 						} else {
+                            // value为null?
 							let values[] = value;
 							let snapshot[attributeField] = value;
 						}
@@ -2324,6 +2337,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 		}
 
 		/**
+		 * 给主键字段赋值
 		 * If there is an identity field we add it using "null" or "default"
 		 */
 		if identityField !== false {
@@ -2384,6 +2398,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 		}
 
 		/**
+		 * 最终使用Phalcon\Db\Adapter\Pdo\Mysql类的insert()函数实现插入操作
 		 * The low level insert is performed
 		 */
 		let success = connection->insert(table, values, fields, bindTypes);
@@ -2417,6 +2432,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 			let this->{attributeField} = lastInsertedId;
 			let snapshot[attributeField] = lastInsertedId;
 
+            // 如果使用了dynamic update,即this->useDynamicUpdate(true),则保存快照数据到this->_snapshot,供后续使用
 			if manager->isKeepingSnapshots(this) {
 			    let this->_snapshot = snapshot;
 			}
@@ -2432,6 +2448,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	}
 
 	/**
+	 * 进行实际的更新操作
 	 * Sends a pre-build UPDATE SQL statement to the relational database system
 	 *
 	 * @param \Phalcon\Mvc\Model\MetaDataInterface metaData
@@ -2454,10 +2471,12 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
  			manager = <ManagerInterface> this->_modelsManager;
 
  		/**
+ 		 * 检查是否使用了dynamic update
  		 * Check if the model must use dynamic update
  		 */
  		let useDynamicUpdate = (boolean) manager->isUsingDynamicUpdate(this);
 
+        // 如果使用了dynamic update，则获取数据快照，如果快照不存在，认为没有使用dynamic update
  		if useDynamicUpdate {
  			let snapshot = this->_snapshot;
  			if typeof snapshot != "array" {
@@ -2466,8 +2485,10 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
  		}
 
  		let dataTypes = metaData->getDataTypes(this),
-			 bindDataTypes = metaData->getBindTypes(this),
+			bindDataTypes = metaData->getBindTypes(this),
+			// 获取所有的非主键属性
  			nonPrimary = metaData->getNonPrimaryKeyAttributes(this),
+ 			// 获取所有在进行update操作时必须忽略的属性，即通过this->skipAttributesOnUpdate(array! attributes)函数设置的属性
  			automaticAttributes = metaData->getAutomaticUpdateAttributes(this);
 
  		if globals_get("orm.column_renaming") {
@@ -2477,6 +2498,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
  		}
 
  		/**
+ 		 * 只更新非主键，主键忽略
  		 * We only make the update based on the non-primary attributes, values in primary key attributes are ignored
  		 */
  		for field in nonPrimary {
@@ -2508,6 +2530,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
  				if fetch value, this->{attributeField} {
 
  					/**
+ 					 * 当没有使用dynamic update时，所有的字段都进行更新操作，否则只有快照数据里不存在的字段或者和快照数据值不同的字段才进行更新
  					 * When dynamic update is not used we pass every field to the update
  					 */
  					if !useDynamicUpdate {
@@ -2593,6 +2616,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
  		}
 
  		/**
+ 		 * 没有要更新的字段直接返回true
  		 * If there is no fields to update we return true
  		 */
  		if !count(fields) {
@@ -2642,6 +2666,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
  		}
 
  		/**
+ 		 * 最终使用Phalcon\Db\Adapter\Pdo\Mysql类的update()函数实现更新
  		 * We build the conditions as an array
  		 * Perform the low level update
  		 */
@@ -2651,6 +2676,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
  			"bindTypes"  : uniqueTypes
  		], bindTypes);
 
+        // 更新快照数据
  		if success && manager->isKeepingSnapshots(this) {
 			if typeof this->_snapshot == "array" {
 				let this->_snapshot = array_merge(this->_snapshot, newSnapshot);
@@ -2951,6 +2977,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	}
 
 	/**
+	 * 如果数据库不存在该记录,则插入,否则更新。成功返回true,失败返回false。
 	 * Inserts or updates a model instance. Returning true on success or false otherwise.
 	 *
 	 *<code>
@@ -2982,6 +3009,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 
 		let metaData = this->getModelsMetaData();
 
+        // 如果data参数为非空数组，则调用$this->assign()函数对模型的属性进行赋值
 		if typeof data == "array" && count(data) > 0 {
 			this->assign(data, null, whiteList);
 		}
@@ -3067,11 +3095,14 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 		}
 
 		/**
+		 * 如果数据库已经存在该记录，则进行update操作，否则进行insert操作
 		 * Depending if the record exists we do an update or an insert operation
 		 */
 		if exists {
+		    // 使用this->_doLowUpdate()函数进行实际的更新操作
 			let success = this->_doLowUpdate(metaData, writeConnection, table);
 		} else {
+		    // 使用this->_doLowInsert()函数进行实际的插入操作
 			let success = this->_doLowInsert(metaData, writeConnection, table, identityField);
 		}
 
